@@ -10,6 +10,18 @@ import UIKit
 
 class OrientationLockNavigationController: UINavigationController {
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        if let leftNavBarButton = navigationBar.topItem?.leftBarButtonItem {
+            leftNavBarButton.title = Spot.sharedInstance.leftNavigationBarButtonText
+        }
+        
+        if let rightNavBarButton = navigationBar.topItem?.rightBarButtonItem {
+            rightNavBarButton.title = Spot.sharedInstance.rightNavigationBarButtonText
+        }
+    }
+    
     var orientationToLock: UIDeviceOrientation =  UIDeviceOrientation.portrait
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {

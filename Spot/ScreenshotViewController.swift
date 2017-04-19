@@ -7,39 +7,97 @@
 //
 
 import UIKit
-import MessageUI
 
 /// Drawing code taken from https://github.com/FlexMonkey/ForceSketch
 class SpotViewController: UIViewController {
     
-    @IBOutlet weak var screenshotImageView: UIImageView!
     
+    //
+    // MARK: - Properties
+    //
+    
+    
+    /// Outlets
+    @IBOutlet weak var screenshotImageView: UIImageView!
+    @IBOutlet weak var promptLabel: UILabel!
+    
+    /// Screenshot taken from the current screen.
     var screenshot: UIImage?
     
+    /// Text to be displayed in prompt label.
+    var promptLabelText: String?
+    
+    /// Image view where the user draws
     let imageView = UIImageView()
     
+    /// Issue sender implementation ("transport layer")
+    var spotSender: SpotSender?
+    
+    /// Drawing properties
     let hsb = CIFilter(name: "CIColorControls", withInputParameters: [kCIInputBrightnessKey: 0.05])!
     let gaussianBlur = CIFilter(name: "CIGaussianBlur", withInputParameters: [kCIInputRadiusKey: 1])!
     let compositeFilter = CIFilter(name: "CISourceOverCompositing")!
     var imageAccumulator: CIImageAccumulator!
     var previousTouchLocation: CGPoint?
 
+    /// Object that can handle combining images.
+    private var imageCombiner = ImageCombiner()
+
+    
+    //
+    // MARK: - VC Lifecycle
+    //
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
         if let screenshot = screenshot, let screenshotImageView = screenshotImageView {
             screenshotImageView.image = screenshot
         }
         
+        if let text = promptLabelText {
+            promptLabel.text = text
+        }
+        
         imageAccumulator = CIImageAccumulator(extent: view.frame, format: kCIFormatARGB8)
         
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+
         view.addSubview(imageView)
+        
+        self.view.setNeedsUpdateConstraints(); // bootstrap Auto Layout
     }
     
-    override var prefersStatusBarHidden: Bool {
-        return true
+    
+    //
+    // MARK: - Action handlers
+    //
+    
+    
+    @IBAction func pressedSend(_ sender: Any) {
+        let combinedImage = imageCombiner.combine(bottom: screenshot!, with: imageView.image)
+        
+        let issueData = SpotIssueData(originalScreenshot: screenshot, combinedImage: combinedImage)
+        
+        if let sender = spotSender {
+            if let spotEmailSender = sender as? SpotMailSender {
+                spotEmailSender.spotViewController = self
+            }
+            
+            sender.send(data: issueData)
+        }
     }
+    
+    @IBAction func pressedCancel(_ sender: Any) {
+        self.navigationController?.dismiss(animated: true, completion: nil)
+    }
+    
+    
+    //
+    // MARK: - Drawing code
+    //
+    
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         previousTouchLocation = touches.first?.location(in: view)
@@ -97,71 +155,16 @@ class SpotViewController: UIViewController {
         previousTouchLocation = nil
     }
     
-    override func viewDidLayoutSubviews() {
-        imageView.frame = view.frame
-    }
     
-    @IBAction func pressedSend(_ sender: Any) {
-        showEmail()
-    }
+    //
+    // MARK: - Overrides
+    //
     
-    @IBAction func pressedCancel(_ sender: Any) {
-        self.navigationController?.dismiss(animated: true, completion: nil)
+    
+    override var prefersStatusBarHidden: Bool {
+        return true
     }
+
 }
 
-extension SpotViewController: MFMailComposeViewControllerDelegate {
-    
-    func showEmail() {
-        if MFMailComposeViewController.canSendMail() {
-            let mailViewController = MFMailComposeViewController()
-            mailViewController.mailComposeDelegate = self
-            mailViewController.setSubject("\(Spot.appName()) issue")
-            mailViewController.setMessageBody(Spot.deviceAppInfo(), isHTML: false)
-            
-            if let combinedImageData = combinedImageData() {
-                mailViewController.addAttachmentData(combinedImageData, mimeType: "image/png", fileName: "annotatedScreenshot.png")
-            }
-            
-            if let screenshotData = screenshotData() {
-                mailViewController.addAttachmentData(screenshotData, mimeType: "image/png", fileName: "originalScreenshot.png")
-            }
-            
-            self.present(mailViewController, animated: true, completion: nil)
-        }
-        else {
-            let alert = UIAlertController(title: "Error", message: "No email account available", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel) { _ in
-                alert.dismiss(animated: true, completion: nil)
-            })
-                
-            present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    func combinedImageData() -> Data? {
-        var combinedImageData: Data?
-        if let drawnImage = imageView.image, let screenshotImage = screenshot {
-            if let combinedImage = Spot.combine(bottom: screenshotImage, with: drawnImage) {
-                combinedImageData = UIImagePNGRepresentation(combinedImage)
-            }
-        }
-        
-        return combinedImageData
-    }
-    
-    func screenshotData() -> Data? {
-        var screenshotData: Data?
-        if let screenshot = screenshot {
-            screenshotData = UIImagePNGRepresentation(screenshot)
-        }
-        
-        return screenshotData
-    }
-    
-    // MARK: MFMailComposeViewControllerDelegate methods
-    
-    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-        self.dismiss(animated: true, completion: nil)
-    }
-}
+

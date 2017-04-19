@@ -8,109 +8,130 @@
 
 import UIKit
 
-extension UIWindow {
-    open override func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?) {
-        if Spot.sharedInstance.handling {
-            Spot.launchFlow()
-        }
-    }
-}
+public class Spot: NSObject {
 
-@objc public class Spot: NSObject {
     
+    //
+    // MARK: - Appearance Properties
+    //
+
+
+    /// Text displayed in left button of navigation bar.
+    var leftNavigationBarButtonText = "Cancel"
+
+    /// Text displayed in right button of navigation bar.
+    var rightNavigationBarButtonText = "Send"
+
+    /// Text prompt displayed above taken screenshot.
+    var promptLabelText = "Mark error in the image please."
+
+
+    //
+    // MARK: - Properties
+    //
+
+
+    /// Enable Spot with shake gesture?
+    var enableWithShakeGesture: Bool = false
+
+    /// Spot "transport layer" - Defaults to e-mail, but you can create custom and send issue data wherever you want
+    /// by adopting SpotSender protocol.
+    var spotSender: SpotSender = SpotMailSender()
+
+    /// Spot singleton instance.
     static let sharedInstance = Spot()
-    var handling: Bool = false
+
+    /// Screenshot taker.
+    private let screenshotter = Screenshotter()
     
-    public static func start() {
-        sharedInstance.handling = true
+
+    //
+    // MARK: - Functions
+    //
+
+
+    public static func startListeningForShakeGesture() {
+        sharedInstance.enableWithShakeGesture = true
     }
     
-    public static func stop() {
-        sharedInstance.handling = false
+    public static func stopListeningForShakeGesture() {
+        sharedInstance.enableWithShakeGesture = false
     }
     
-    static func launchFlow() {
-        if let screenshot = captureScreen() {
+
+    /// Take screenshot of current screen and show the view controller with taken screenshot and send options.
+    func launch() {
+        if let screenshot = screenshotter.captureScreen() {
             loadViewControllers(withScreenshot: screenshot)
         }
     }
     
-    static func captureScreen() -> UIImage? {
-        var screenshot: UIImage?
-        let screenRect = UIScreen.main.bounds
-        UIGraphicsBeginImageContextWithOptions(screenRect.size, false, UIScreen.main.scale)
-        if let context = UIGraphicsGetCurrentContext() {
-            UIColor.black.set()
-            context.fill(screenRect);
-            let window = UIApplication.shared.keyWindow
-            window?.layer.render(in: context)
-            screenshot = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-        }
-        
-        return screenshot
-    }
+
+    //
+    // MARK: - Private
+    //
     
-    static func loadViewControllers(withScreenshot screenshot: UIImage) {
+
+    /// Load view controller that allows user to mark issue in the screenshot by drawing.
+    ///
+    /// - Parameter screenshot: Screenshot into which the user will be able to draw.
+    private func loadViewControllers(withScreenshot screenshot: UIImage) {
+        guard let initialViewController = loadSpotViewController() else { return }
+        guard let topViewController = topViewController() else { return }
+
+        initialViewController.orientationToLock = UIDevice.current.orientation
+        if ((topViewController as? OrientationLockNavigationController) != nil) {
+            // We're already presenting an instance of Spot!
+            return
+        }
+        else {
+            topViewController.present(initialViewController, animated: true, completion: nil)
+            if let screenshotViewController = initialViewController.topViewController as? SpotViewController {
+                screenshotViewController.screenshot = screenshot
+                screenshotViewController.spotSender = spotSender
+                screenshotViewController.promptLabelText = promptLabelText
+            }
+        }
+
+    }
+
+    
+    /// Create Spot view controller.
+    ///
+    /// - Returns: OrientationLockNavigationController or nil, if view controller instantiating fails.
+    private func loadSpotViewController() -> OrientationLockNavigationController? {
         // Handle pod bundle (if installed via 'pod install') or local for example
         var storyboard: UIStoryboard
-        let podBundle = Bundle(for: self.classForCoder())
+        let podBundle = Bundle(for: object_getClass(self))
         if let bundleURL = podBundle.url(forResource: "Spot", withExtension: "bundle") {
-            guard let bundle = Bundle(url: bundleURL) else { return }
+            guard let bundle = Bundle(url: bundleURL) else { return nil }
             storyboard = UIStoryboard.init(name: "Spot", bundle: bundle)
         }
         else {
             storyboard = UIStoryboard.init(name: "Spot", bundle: nil)
         }
-        
+
         if let initialViewController = storyboard.instantiateInitialViewController() as? OrientationLockNavigationController {
-            initialViewController.orientationToLock = UIDevice.current.orientation
-            let window = UIApplication.shared.keyWindow
-            window?.rootViewController?.present(initialViewController, animated: true, completion: nil)
-            if let screenshotViewController = initialViewController.topViewController as? SpotViewController {
-                screenshotViewController.screenshot = screenshot
+            return initialViewController
+        }
+        else {
+            return nil
+        }
+    }
+
+
+    /// Get currently presented view controller (the topmost view controller).
+    ///
+    /// - Returns: View Controller.
+    private func topViewController() -> UIViewController? {
+        if var topViewController = UIApplication.shared.keyWindow?.rootViewController {
+            while let presentedViewController = topViewController.presentedViewController {
+                topViewController = presentedViewController
             }
+            return topViewController
         }
+
+        return nil
     }
-    
-    static func combine(bottom bottomImage: UIImage, with topImage: UIImage) -> UIImage? {
-        var combinedImage: UIImage?
-        UIGraphicsBeginImageContextWithOptions(bottomImage.size, false, 0.0)
-        
-        bottomImage.draw(in: CGRect.init(x: 0, y: 0, width: topImage.size.width, height: topImage.size.height))
-        topImage.draw(in: CGRect.init(x: 0, y: 0, width: bottomImage.size.width, height: bottomImage.size.height))
-        
-        combinedImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return combinedImage
-    }
-    
-    static func modelName() -> String? {
-        var systemInfo = utsname()
-        uname(&systemInfo)
-        let machineMirror = Mirror(reflecting: systemInfo.machine)
-        let identifier = machineMirror.children.reduce("") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else { return identifier }
-            return identifier + String(UnicodeScalar(UInt8(value)))
-        }
-        return identifier
-    }
-    
-    static func deviceAppInfo() -> String {
-        let versionNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
-        let buildNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String
-        let bundleName = appName()
-        
-        var bodyText = "Bundle name: \(bundleName)\nVersion: \(versionNumber)\nBuild: \(buildNumber)\n"
-        if let modelName = Spot.modelName() {
-            bodyText += "Device: \(modelName)"
-        }
-        
-        return bodyText
-    }
-    
-    static func appName() -> String {
-        return Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as! String
-    }
+
 }
