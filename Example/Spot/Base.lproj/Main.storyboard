@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -34,10 +34,19 @@
                                     <segue destination="Y4j-29-Njk" kind="presentation" id="mwo-2O-AXD"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4qd-e0-kXK">
+                                <rect key="frame" x="106" y="414" width="162" height="30"/>
+                                <state key="normal" title="Invoke Spot with button"/>
+                                <connections>
+                                    <action selector="launchSpotWithButtonPress:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GXr-im-aiC"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="4qd-e0-kXK" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="2XU-27-oCN"/>
                             <constraint firstItem="aoD-lE-YQC" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="6VM-de-8pb"/>
+                            <constraint firstItem="4qd-e0-kXK" firstAttribute="top" secondItem="WRP-Nx-v3o" secondAttribute="bottom" constant="20" id="Atp-ij-W6b"/>
                             <constraint firstItem="WRP-Nx-v3o" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="G9m-y4-JGt"/>
                             <constraint firstItem="WRP-Nx-v3o" firstAttribute="top" secondItem="aoD-lE-YQC" secondAttribute="bottom" constant="20" id="Ipu-fd-3hh"/>
                             <constraint firstItem="aoD-lE-YQC" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Msn-pW-rJZ"/>
@@ -61,7 +70,7 @@
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="avX-iw-nOc" id="XEN-Nq-lyD">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
