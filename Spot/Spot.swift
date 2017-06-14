@@ -22,9 +22,15 @@ public class Spot: NSObject {
     /// Text displayed in right button of navigation bar.
     var rightNavigationBarButtonText = "Send"
 
-    /// Text prompt displayed above taken screenshot.
-    var promptLabelText = "Mark error in the image please."
-
+    /// Text prompt displayed above taken screenshot. Set to nil to display no text prompt.
+    var promptLabelText: String? = "Please mark an error in the image."
+    
+    /// Prompt label background color.
+    var promptLabelBackgroundColor = UIColor.gray
+    
+    /// Prompt label text color.
+    var promptLabelTextColor = UIColor.white
+    
 
     //
     // MARK: - Properties
@@ -86,10 +92,12 @@ public class Spot: NSObject {
         }
         else {
             topViewController.present(initialViewController, animated: true, completion: nil)
-            if let screenshotViewController = initialViewController.topViewController as? SpotViewController {
+            if let screenshotViewController = initialViewController.topViewController as? ScreenshotViewController {
                 screenshotViewController.screenshot = screenshot
                 screenshotViewController.spotSender = spotSender
                 screenshotViewController.promptLabelText = promptLabelText
+                screenshotViewController.promptLabelBackgroundColor = promptLabelBackgroundColor
+                screenshotViewController.promptLabelTextColor = promptLabelTextColor
             }
         }
 

@@ -9,7 +9,7 @@
 import UIKit
 
 /// Drawing code taken from https://github.com/FlexMonkey/ForceSketch
-class SpotViewController: UIViewController {
+class ScreenshotViewController: UIViewController {
     
     
     //
@@ -20,12 +20,19 @@ class SpotViewController: UIViewController {
     /// Outlets
     @IBOutlet weak var screenshotImageView: UIImageView!
     @IBOutlet weak var promptLabel: UILabel!
+    @IBOutlet weak var promptLabelHeightConstraint: NSLayoutConstraint!
     
     /// Screenshot taken from the current screen.
     var screenshot: UIImage?
     
     /// Text to be displayed in prompt label.
     var promptLabelText: String?
+    
+    /// Prompt label background color.
+    var promptLabelBackgroundColor: UIColor?
+    
+    /// Prompt label text color.
+    var promptLabelTextColor: UIColor?
     
     /// Image view where the user draws
     let imageView = UIImageView()
@@ -56,8 +63,12 @@ class SpotViewController: UIViewController {
             screenshotImageView.image = screenshot
         }
         
-        if let text = promptLabelText {
+        if let text = promptLabelText, let bgColor = promptLabelBackgroundColor, let textColor = promptLabelTextColor {
             promptLabel.text = text
+            promptLabel.textColor = textColor
+            promptLabel.backgroundColor = bgColor
+        } else {
+            promptLabelHeightConstraint.constant = 0
         }
         
         imageAccumulator = CIImageAccumulator(extent: view.frame, format: kCIFormatARGB8)

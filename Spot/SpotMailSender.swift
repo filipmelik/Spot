@@ -32,7 +32,7 @@ class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate 
     
     
     /// Parent view controller.
-    var spotViewController: SpotViewController?
+    var spotViewController: ScreenshotViewController?
     
     
     //
