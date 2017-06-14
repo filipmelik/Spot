@@ -33,6 +33,9 @@ class ScreenshotViewController: UIViewController {
     
     /// Prompt label text color.
     var promptLabelTextColor: UIColor?
+
+    /// Custom string passed along with issue.
+    var customIssueData: String?
     
     /// Image view where the user draws
     let imageView = UIImageView()
@@ -89,7 +92,11 @@ class ScreenshotViewController: UIViewController {
     @IBAction func pressedSend(_ sender: Any) {
         let combinedImage = imageCombiner.combine(bottom: screenshot!, with: imageView.image)
         
-        let issueData = SpotIssueData(originalScreenshot: screenshot, combinedImage: combinedImage)
+        let issueData = SpotIssueData(
+            originalScreenshot: screenshot,
+            combinedImage: combinedImage,
+            customIssueData: customIssueData
+        )
         
         if let sender = spotSender {
             if let spotEmailSender = sender as? SpotMailSender {

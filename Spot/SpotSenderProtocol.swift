@@ -9,6 +9,6 @@
 import Foundation
 
 /// Protocol that allows to use custom issue sender - email, github, custom solution... whatever you want.
-protocol SpotSender {
+public protocol SpotSender {
     func send(data: SpotIssueData)
 }

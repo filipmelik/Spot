@@ -12,7 +12,7 @@ import MessageUI
 
 /// Implementation of SpotSender protocol that allows to send issue data through e-mail.
 /// Note: If you want to localize labels or alter the behavior, you have to create a subclass and override the behavior.
-class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate {
+open class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate {
     
     
     //
@@ -20,10 +20,10 @@ class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate 
     //
     
     
-    var alertErrorTitle = "Error"
-    var alertOKLabelText = "OK"
-    var noEmailAccountsText = "No e-mail accounts available"
-    var issueSubjectPostfix = "issue"
+    open var alertErrorTitle = "Error"
+    open var alertOKLabelText = "OK"
+    open var noEmailAccountsText = "No e-mail accounts available"
+    open var issueSubjectPostfix = "issue"
     
     
     //
@@ -40,7 +40,7 @@ class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate 
     //
     
     
-    func send(data: SpotIssueData) {
+    open func send(data: SpotIssueData) {
         showEmail(issueData: data)
     }
     
@@ -96,7 +96,10 @@ class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate 
         
         var bodyText = "Device info\nBundle name: \(bundleName)\nVersion: \(versionNumber)\nBuild: \(buildNumber)\n"
         if let modelName = issueData.metadata.deviceModelName {
-            bodyText += "Device: \(modelName)"
+            bodyText += "Device: \(modelName)\n"
+        }
+        if let customData = issueData.customIssueData {
+            bodyText += "Additional: \(customData)\n"
         }
         
         return bodyText
@@ -108,7 +111,11 @@ class SpotMailSender: NSObject, SpotSender, MFMailComposeViewControllerDelegate 
     //
     
     
-    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+    public func mailComposeController(
+        _ controller: MFMailComposeViewController,
+        didFinishWith result: MFMailComposeResult,
+        error: Error?
+    ) {
         spotViewController?.dismiss(animated: true, completion: nil)
     }
     

@@ -17,19 +17,22 @@ public class Spot: NSObject {
 
 
     /// Text displayed in left button of navigation bar.
-    var leftNavigationBarButtonText = "Cancel"
+    public var leftNavigationBarButtonText = "Cancel"
 
     /// Text displayed in right button of navigation bar.
-    var rightNavigationBarButtonText = "Send"
+    public var rightNavigationBarButtonText = "Send"
 
     /// Text prompt displayed above taken screenshot. Set to nil to display no text prompt.
-    var promptLabelText: String? = "Please mark an error in the image."
+    public var promptLabelText: String? = "Please mark an error in the image."
     
     /// Prompt label background color.
-    var promptLabelBackgroundColor = UIColor.gray
+    public var promptLabelBackgroundColor = UIColor.gray
     
     /// Prompt label text color.
-    var promptLabelTextColor = UIColor.white
+    public var promptLabelTextColor = UIColor.white
+
+    /// Custom string passed along with issue.
+    public var customIssueData: String? = nil
     
 
     //
@@ -38,14 +41,14 @@ public class Spot: NSObject {
 
 
     /// Enable Spot with shake gesture?
-    var enableWithShakeGesture: Bool = false
+    public var enableWithShakeGesture: Bool = false
 
     /// Spot "transport layer" - Defaults to e-mail, but you can create custom and send issue data wherever you want
     /// by adopting SpotSender protocol.
-    var spotSender: SpotSender = SpotMailSender()
+    public var spotSender: SpotSender = SpotMailSender()
 
     /// Spot singleton instance.
-    static let sharedInstance = Spot()
+    public static let sharedInstance = Spot()
 
     /// Screenshot taker.
     private let screenshotter = Screenshotter()
@@ -66,7 +69,7 @@ public class Spot: NSObject {
     
 
     /// Take screenshot of current screen and show the view controller with taken screenshot and send options.
-    func launch() {
+    public func launch() {
         if let screenshot = screenshotter.captureScreen() {
             loadViewControllers(withScreenshot: screenshot)
         }
@@ -98,6 +101,7 @@ public class Spot: NSObject {
                 screenshotViewController.promptLabelText = promptLabelText
                 screenshotViewController.promptLabelBackgroundColor = promptLabelBackgroundColor
                 screenshotViewController.promptLabelTextColor = promptLabelTextColor
+                screenshotViewController.customIssueData = customIssueData
             }
         }
 

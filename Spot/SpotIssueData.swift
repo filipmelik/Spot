@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 /// Container for data about issue
-struct SpotIssueData {
+public struct SpotIssueData {
 
     
     //
@@ -21,6 +21,8 @@ struct SpotIssueData {
     private(set) var originalScreenshot: UIImage?
     private(set) var combinedScreenshot: UIImage?
     private(set) var metadata = IssueMetadata()
+
+    private(set) var customIssueData: String?
     
     
     //
@@ -54,9 +56,10 @@ struct SpotIssueData {
     //
     
     
-    init(originalScreenshot: UIImage?, combinedImage: UIImage?) {
+    init(originalScreenshot: UIImage?, combinedImage: UIImage?, customIssueData: String?) {
         self.originalScreenshot = originalScreenshot
         self.combinedScreenshot = combinedImage
+        self.customIssueData = customIssueData
     }
     
 }
